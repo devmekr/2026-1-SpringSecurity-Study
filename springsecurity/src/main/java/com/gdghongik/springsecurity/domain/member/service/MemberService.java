@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static com.gdghongik.springsecurity.global.exception.ErrorCode.MEMBER_NOT_FOUND;
 import static com.gdghongik.springsecurity.global.exception.ErrorCode.MEMBER_USERNAME_DUPLICATE;
@@ -27,13 +26,13 @@ public class MemberService {
     public void createMember(MemberCreateRequest request) {
         // 중복되는 유저네임이 있으면 에러
 
-        boolean isDuplicate = memberRepository.existsByUsername(request.getUsername());
+        boolean isDuplicate = memberRepository.existsByUsername(request.username());
 
         if (isDuplicate) {
             throw new CustomException(MEMBER_USERNAME_DUPLICATE);
         }
 
-        Member member = new Member(request.getUsername(), request.getPassword());
+        Member member = new Member(request.username(), request.password());
 
         // 멤버를 저장한다
         memberRepository.save(member);
@@ -47,7 +46,7 @@ public class MemberService {
         List<Member> members = memberRepository.findAll();
 
         for (Member member : members) {
-            MemberInfoResponse response = new MemberInfoResponse(member);
+            MemberInfoResponse response = MemberInfoResponse.from(member);
             list.add(response);
         }
 
@@ -62,7 +61,7 @@ public class MemberService {
         if (member == null) {
             throw new CustomException(MEMBER_NOT_FOUND);
         }
-        return new MemberInfoResponse(member);
+        return  MemberInfoResponse.from(member);
     }
 
     @Transactional
@@ -72,7 +71,7 @@ public class MemberService {
                 .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
         // 해당하는 멤버 정보를 갱신한다
-        member.updateUsername(request.getUsername());
+        member.updateUsername(request.username());
     }
 
     @Transactional
